@@ -1,0 +1,25 @@
+# שלב ראשון — Build
+FROM python:3.10-slim AS builder
+
+WORKDIR /app
+
+# מתקינים תלויות
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+# שלב שני — Run
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# מעתיקים את התלויות מהשלב הראשון
+COPY --from=builder /root/.local /root/.local
+
+# מוסיפים את קבצי האפליקציה
+COPY . .
+
+# מוסיפים PATH לתלויות
+ENV PATH=/root/.local/bin:$PATH
+
+# מריצים את השרת
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
